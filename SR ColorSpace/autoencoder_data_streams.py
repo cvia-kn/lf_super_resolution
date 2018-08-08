@@ -83,7 +83,7 @@ class dataset:
   #
   # result will be None if subset is smaller than the batch size.
   #
-  def next_batch( self, batch_size, subset_name='train' ):
+  def next_batch( self, ColorSpace, batch_size, subset_name='train' ):
     """Return the next `batch_size` examples from this data set."""
 
     subset = self.subsets[ subset_name ]
@@ -124,7 +124,7 @@ class dataset:
     for stream in self.streams:
       # create array for stream, requires stream shape
       sh = list( self.stream[ stream ].shape )
-      batch[ stream ] = np.zeros( [sz] + sh[0:-1],  np.float64 )
+      batch[ stream ] = np.zeros( [sz] + sh[0:-1],  np.float32 )
 
     n = 0
     for i in idx:
@@ -135,6 +135,12 @@ class dataset:
         dataset_index = [slice(0,None)] * nd + [i]
         batch[ stream ][batch_index] = self.stream[ stream ][ tuple(dataset_index) ]
 
+        if ColorSpace == 'YUV':
+          batch = lf_tools.convert2YUV(batch, stream, batch_index)
+        elif ColorSpace == 'YCBCR':
+          batch = lf_tools.convert2YCBCR(batch, stream, batch_index)
+        elif ColorSpace == 'LAB':
+          batch = lf_tools.convert2LAB(batch, stream, batch_index)
       # if 'diffuse_v' in self.streams:
       #   batch = lf_tools.augment_data_intrinsic(batch, batch_index)
       # else:

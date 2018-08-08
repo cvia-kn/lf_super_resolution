@@ -3,14 +3,14 @@
 
 
 # NETWORK MODEL NAME
-network_model = 'SR_YCbCr'
+network_model = 'SR_YUV'
 
-data_path = '/home/z/PycharmProjects/SR YCbCr/'
+data_path = '/home/z/PycharmProjects/SR YUV/'
 # data_path = 'H:\\trainData\\'
 # CURRENT TRAINING DATASET
 training_data = [
     # 'lf_benchmark_HSV.hdf5',
-    data_path + 'lf_patch_synthetic_YCbCr_sr_1.hdf5',
+    data_path + 'lf_patch_synthetic_rgb_sr_1.hdf5',
     # data_path + 'lf_patch_synthetic_sr_2.hdf5',
     # data_path + 'lf_patch_synthetic_sr_3.hdf5',
     # data_path + 'lf_patch_synthetic_sr_4.hdf5',
@@ -25,7 +25,10 @@ training_data = [
 config = {
     # flag whether we want to train for RGB (might require more
     # changes in other files, can't remember right now)
-    'rgb'                  : True,
+    'ColorSpace'                  : 'YUV',
+    # 'ColorSpace'                  : 'YCBCR',
+    # 'ColorSpace'                  : 'LAB',
+    # 'ColorSpace'                  : 'RGB',
 
     # maximum layer which will be initialized (deprecated)
     'max_layer'            : 100,
@@ -43,10 +46,7 @@ nviews = 9
 H_HR = 96
 W_HR = 96
 
-if config['rgb']:
-    C = 3
-else:
-    C = 1
+C = 3
 
 # Number of features in the layers
 L = 16
@@ -74,7 +74,10 @@ patch_weight  = 3
 # Encoder stack for downwards convolution
 
 layer_config = [
-    { 'id': 'YCbCr',
+    { 'id': 'YUV',
+      # 'id': 'YCBCR',
+      # 'id': 'LAB',
+      # 'id': 'RGB',
       'channels' : C,
       'start' : 0,
       'end': 3,
@@ -169,7 +172,10 @@ pinhole_connections = True
 
 # 3D ENCODERS
 encoders_3D = [
-    { 'id': 'YCbCr',
+    { 'id': 'YUV',
+      # 'id': 'YCBCR',
+      # 'id': 'LAB',
+      # 'id': 'RGB',
       'channels': C,
       'preferred_gpu' : 0,
     },
@@ -183,9 +189,12 @@ encoders_3D = [
 # Careful, takes memory. Remove some from training if limited.
 #
 decoders_2D = [
-    { 'id': 'YCbCr',
+    { 'id': 'YUV',
+      # 'id': 'YCBCR',
+      # 'id': 'LAB',
+      # 'id': 'RGB',
       'channels': C,
-      'preferred_gpu' : 1,
+      'preferred_gpu' : 0,
       'loss_fn':  'L2',
       'train':    True,
       'weight':   1.0,
@@ -196,10 +205,16 @@ decoders_2D = [
 minimizers = [
 
   # center view super resolution
-  { 'id'        : 'YCbCr_min',
-    'losses_2D' : [ 'YCbCr' ],
+  { 'id'        : 'YUV_min',
+      # 'id': 'YCBCR_min',
+      # 'id': 'LAB_min',
+      # 'id': 'RGB_min',
+    'losses_2D' : [ 'YUV' ],
+    # 'losses_2D' : [ 'YCBCR' ],
+    # 'losses_2D' : [ 'LAB' ],
+    # 'losses_2D' : [ 'RGB' ],
     'optimizer' : 'Adam',
-    'preferred_gpu' : 1,
+    'preferred_gpu' : 0,
     'step_size' : 1e-4,
   },
  ]

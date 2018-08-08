@@ -68,13 +68,13 @@ sy = int(sy_LR * scale)
 #
 # previous training data will be erased.
 
-training_data_dir = "H:\\trainData\\"
-training_data_filename = 'lf_patch_synthetic_sr_7.hdf5'
+training_data_dir = "/home/z/PycharmProjects/SR YUV/"
+training_data_filename = 'lf_patch_synthetic_rgb_sr_1.hdf5'
 inner_folder = 'sequence'
 flow = ['000000', '000001']
 file = h5py.File( training_data_dir + training_data_filename, 'w' )
 
-data_source = "Q:\\aa\\All_Data_CNN\\CNN_data_crosshair_all\\train\\7"
+data_source = "/home/z/PycharmProjects/SR/1"
 data_folders = os.listdir(data_source)
 # take only part
 data_folders = data_folders[0:20]
@@ -116,18 +116,10 @@ for lf_name in data_folders:
             LF_LR = np.zeros((LF.shape[0],LF.shape[1],int(LF.shape[2]/scale),
                             int(LF.shape[3]/scale),int(LF.shape[4])),np.float32)
             #
-            # disp = file_io.read_disparity(data_folder)
-            # disp_gt = np.array(disp[0])
-            # disp_gt = np.flip(disp_gt, 0)
-            cv_gt = rgb2hsv(lf_tools.cv(LF))
-            # cv_rgb = lf_tools.cv(LF)
-            # vc = hsv2rgb(cv_gt)
-            # plt.imshow(vc)
-            # plt.show()
+            cv_gt = lf_tools.cv(LF)
 
             for v in range(0, nviews):
                 for h in range(0, nviews):
-                    LF[v, h, :, :, :] = rgb2hsv(LF[v,h,:,:,:])
                     LF[v, h, :, :, :] = gaussian_filter(LF[v, h, :, :, :], sigma = 0.5, truncate=2)
                     LF_LR[v, h, :, :, :] = LF[v, h, 0:LF.shape[2]-1:scale, 0:LF.shape[3]-1:scale, :]
 

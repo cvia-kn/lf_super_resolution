@@ -22,7 +22,9 @@ import code
 import os
 import sys
 import h5py
-from skimage.color import rgb2hsv, hsv2rgb
+# from skimage.color import rgb2hsv, hsv2rgb
+from libs.convert_colorspace import rgb2YCbCr, YCbCr2rgb
+from skimage.color import rgb2lab, lab2rgb
 import numpy as np
 from scipy.ndimage import gaussian_filter
 # python tools for our lf database
@@ -68,8 +70,8 @@ sy = int(sy_LR * scale)
 #
 # previous training data will be erased.
 
-training_data_dir = "/home/z/PycharmProjects/SR HSV/"
-training_data_filename = 'lf_benchmark_HSV.hdf5'
+training_data_dir = "/home/z/PycharmProjects/SR YUV/"
+training_data_filename = 'lf_patch_benchmark_rgb_sr.hdf5'
 file = h5py.File(training_data_dir + training_data_filename, 'w')
 
 #
@@ -102,37 +104,21 @@ data_folders.append('vinyl')
 
 # EPI patches, nviews x patch size x patch size x channels
 # horizontal and vertical direction (to get crosshair)
-dset_v_hs = file.create_dataset( 'stacks_v_hs', (nviews, py_LR, px_LR, 2, 1),
-                              chunks = (nviews, py_LR, px_LR, 2, 1),
-                              maxshape = (nviews, py_LR, px_LR, 2, None) )
+dset_v = file.create_dataset( 'stacks_v', (nviews, py_LR, px_LR, 3, 1),
+                              chunks = (nviews, py_LR, px_LR, 3, 1),
+                              maxshape = (nviews, py_LR, px_LR, 3, None))
 
-dset_h_hs = file.create_dataset('stacks_h_hs', (nviews, py_LR, px_LR, 2, 1),
-                             chunks=(nviews, py_LR, px_LR, 2, 1),
-                             maxshape=(nviews, py_LR, px_LR, 2, None))
-
-dset_v_v = file.create_dataset( 'stacks_v_v', (nviews, py_LR, px_LR, 1, 1),
-                              chunks = (nviews, py_LR, px_LR, 1, 1),
-                              maxshape = (nviews, py_LR, px_LR, 1, None) )
-
-dset_h_v = file.create_dataset('stacks_h_v', (nviews, py_LR, px_LR, 1, 1),
-                             chunks=(nviews, py_LR, px_LR, 1, 1),
-                             maxshape=(nviews, py_LR, px_LR, 1, None))
-
-# # dataset for corresponding depth patches
-# dset_depth = file.create_dataset('depth', (py, px, 1),
-#                                  chunks=(py, px, 1),
-#                                  maxshape=(py, px, None))
+dset_h = file.create_dataset('stacks_h', (nviews, py_LR, px_LR, 3, 1),
+                             chunks=(nviews, py_LR, px_LR, 3, 1),
+                             maxshape=(nviews, py_LR, px_LR, 3, None))
 
 # dataset for correcponsing center view patch (to train joint upsampling)
 # ideally, would want to reconstruct full 4D LF patch, but probably too memory-intensive
 # keep for future work
-dset_cv_hs = file.create_dataset('cv_hs', (py, px, 2, 1),
-                              chunks=(py, px, 2, 1),
-                              maxshape=(py, px, 2, None))
+dset_cv = file.create_dataset('cv', (py, px, 3, 1),
+                              chunks=(py, px, 3, 1),
+                              maxshape=(py, px, 3, None))
 
-dset_cv_v = file.create_dataset('cv_v', (py, px, 1, 1),
-                              chunks=(py, px, 1, 1),
-                              maxshape=(py, px, 1, None))
 
 
 #
@@ -142,13 +128,9 @@ dset_cv_v = file.create_dataset('cv_v', (py, px, 1, 1),
 index = 0
 for lf_name in data_folders:
 
-    # data_folder = "/data/lfa/" + lf_name[0] + "/" + lf_name[1] + "/"
-    # data_folder_LR = os.path.join(data_source_LR, lf_name)
     data_folder = os.path.join(data_source, lf_name)
-    # read diffuse color
-    # LF_LR = file_io.read_lightfield(data_folder_LR)
+
     LF = file_io.read_lightfield(data_folder)
-    # LF_LR = LF_LR.astype(np.float32)
     LF = LF.astype(np.float32)
 
     LF_LR = np.zeros((LF.shape[0],LF.shape[1],int(LF.shape[2]/scale),
@@ -157,20 +139,12 @@ for lf_name in data_folders:
     # disp = file_io.read_disparity(data_folder)
     # disp_gt = np.array(disp[0])
     # disp_gt = np.flip(disp_gt, 0)
-    cv_gt = rgb2hsv(lf_tools.cv(LF))
-    # cv_rgb = lf_tools.cv(LF)
-    # vc = hsv2rgb(cv_gt)
-    # plt.imshow(vc)
-    # plt.show()
-
-
-
+    cv_gt = lf_tools.cv(LF)
 
     for v in range(0, nviews):
         for h in range(0, nviews):
-            LF[v, h, :, :, :] = rgb2hsv(LF[v,h,:,:,:])
-            LF[v, h, :, :, :] = gaussian_filter(LF[v, h, :, :, :], sigma = 0.5, truncate=2)
-            LF_LR[v, h, :, :, :] = LF[v, h, 0:LF.shape[2]-1:scale, 0:LF.shape[3]-1:scale, :]
+            LF[v, h, :, :, :] = gaussian_filter(LF[v, h, :, :, :], sigma=0.5, truncate=2)
+            LF_LR[v, h, :, :, :] = LF[v, h, 0:LF.shape[2] - 1:scale, 0:LF.shape[3] - 1:scale, :]
 
 
     # lf_tools.save_image(training_data_dir + 'input' + lf_name, cv_gt)
@@ -201,36 +175,17 @@ for lf_name in data_folders:
             # make sure the direction of the view shift is the first spatial dimension
             stack_h = np.transpose(stack_h, (0, 2, 1, 3))
 
-            # depth = disp_gt[y:y + py, x:x + px]
             cv = cv_gt[y:y + py, x:x + px]
-            # plt.imshow(cv)
-            # plt.axis('off')
-            # plt.show()
-            # code.interact( local=locals() )
 
             # write to respective HDF5 datasets
-            dset_v_hs.resize(index + 1, 4)
-            dset_v_hs[:, :, :, :, index] = stack_v[:,:,:,0:2]
+            dset_v.resize(index + 1, 4)
+            dset_v[:, :, :, :, index] = stack_v
 
-            dset_h_hs.resize(index + 1, 4)
-            dset_h_hs[:, :, :, :, index] = stack_h[:,:,:,0:2]
+            dset_h.resize(index + 1, 4)
+            dset_h[:, :, :, :, index] = stack_h
 
-            dset_v_v.resize(index + 1, 4)
-            dset_v_v[:, :, :, :, index] = np.reshape(stack_v[:, :, :, 2],(nviews,px_LR,py_LR,1))
-
-            dset_h_v.resize(index + 1, 4)
-            dset_h_v[:, :, :, :, index] = np.reshape(stack_h[:, :, :, 2],(nviews,px_LR,py_LR,1))
-
-            # dset_depth.resize(index + 1, 2)
-            # dset_depth[:, :, index] = depth
-
-            dset_cv_hs.resize(index + 1, 3)
-            dset_cv_hs[:, :, :, index] = cv[:,:,0:2]
-
-            dset_cv_v.resize(index + 1, 3)
-            dset_cv_v[:, :, :, index] = np.reshape(cv[:, :, 2],(px,py,1))
-
-
+            dset_cv.resize(index + 1, 3)
+            dset_cv[:, :, :, index] = cv
 
             # next patch
             index = index + 1

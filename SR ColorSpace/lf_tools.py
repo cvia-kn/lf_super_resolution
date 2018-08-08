@@ -9,7 +9,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from skimage.color import rgb2lab
+from libs.convert_colorspace import rgb2YCbCr, rgb2YUV
 
 
 # returns two epipolar plane image stacks (horizontal/vertical),
@@ -92,6 +93,41 @@ def augment_data_HSV(input, idx):
 
   input['stacks_v_v'][idx] = stacks_v_v
   input['stacks_h_v'][idx] = stacks_h_v
+
+  return(input)
+
+
+
+def convert2YUV(input, stream, idx):
+
+  streamtmp = input[stream][idx]
+
+  streamtmp = rgb2YUV(streamtmp)
+
+  input[stream][idx] = streamtmp
+
+  return(input)
+
+
+
+def convert2YCBCR(input, stream, idx):
+
+  streamtmp = input[stream][idx]
+
+  streamtmp = rgb2YCbCr(streamtmp)
+
+  input[stream][idx] = streamtmp
+
+  return(input)
+
+
+def convert2LAB(input, stream, idx):
+
+  streamtmp = input[stream][idx]
+
+  streamtmp = rgb2lab(streamtmp)
+
+  input[stream][idx] = streamtmp
 
   return(input)
 

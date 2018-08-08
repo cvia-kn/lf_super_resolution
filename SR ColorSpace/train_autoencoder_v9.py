@@ -63,7 +63,7 @@ while True:
 
   nfeed = 0
   for feed in feeds:
-    batch = feed.next_batch( hp.training[ 'samples_per_batch' ], 'training' )
+    batch = feed.next_batch( hp.config['ColorSpace'], hp.training[ 'samples_per_batch' ], 'training' )
 
     batch[ 'index' ] = index
     batch[ 'niter' ] = niter
@@ -78,7 +78,7 @@ while True:
       inputs.put( batch )
 
       # pull the respective batch from the validation dataset and evaluate it
-      batch = feed.next_batch( hp.training[ 'samples_per_batch' ], 'validation' )
+      batch = feed.next_batch( hp.config['ColorSpace'], hp.training[ 'samples_per_batch' ], 'validation' )
       batch[ 'index' ] = index
       batch[ 'niter' ] = niter
       batch[ 'feed_id' ] = feed._file_id

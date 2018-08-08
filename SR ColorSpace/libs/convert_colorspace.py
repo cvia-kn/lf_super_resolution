@@ -2,27 +2,43 @@ import numpy as np
 from scipy import linalg
 from skimage import img_as_float, dtype_limits
 
+def rgb2YUV(image_stack):
 
-def rgb2YCbCr(img):
+    yuv_from_rgb = yuv_from_rgb = np.array([[ 0.299,  0.587,  0.114],
+                                            [-0.14714119, -0.28886916,  0.43601035 ],
+                                            [ 0.61497538, -0.51496512, -0.10001026 ]])
+
+
+    return np.matmul(image_stack,yuv_from_rgb.T.copy())
+
+
+def rgb2YCbCr(image_stack):
 
     ycbcr_from_rgb = np.array([[65.481, 128.553, 24.966],
                                [-37.797, -74.203, 112.0],
                                [112.0, -93.786, -18.214]])/255
 
-    img_y = ycbcr_from_rgb[0, 0] * img[:,:,0] + \
-            ycbcr_from_rgb[0, 1] * img[:,:,1] + \
-            ycbcr_from_rgb[0, 2] * img[:,:,2] +16/255
-    img_cb = ycbcr_from_rgb[1, 0] * img[:,:,0] + \
-             ycbcr_from_rgb[1, 1] * img[:,:,1] + \
-             ycbcr_from_rgb[1, 2] * img[:,:,2] + 128/255
-    img_cr = ycbcr_from_rgb[2, 0] * img[:,:,0] + \
-             ycbcr_from_rgb[2, 1] * img[:,:,1] + \
-             ycbcr_from_rgb[2, 2] * img[:,:,2] + 128/255
+    # img_y = ycbcr_from_rgb[0, 0] * img[:,:,0] + \
+    #         ycbcr_from_rgb[0, 1] * img[:,:,1] + \
+    #         ycbcr_from_rgb[0, 2] * img[:,:,2] +16/255
+    # img_cb = ycbcr_from_rgb[1, 0] * img[:,:,0] + \
+    #          ycbcr_from_rgb[1, 1] * img[:,:,1] + \
+    #          ycbcr_from_rgb[1, 2] * img[:,:,2] + 128/255
+    # img_cr = ycbcr_from_rgb[2, 0] * img[:,:,0] + \
+    #          ycbcr_from_rgb[2, 1] * img[:,:,1] + \
+    #          ycbcr_from_rgb[2, 2] * img[:,:,2] + 128/255
+    #
+    # img_ycbcr = np.zeros(img.shape)
+    # img_ycbcr[:, :, 0] = img_y
+    # img_ycbcr[:, :, 1] = img_cb
+    # img_ycbcr[:, :, 2] = img_cr
 
-    img_ycbcr = np.zeros(img.shape)
-    img_ycbcr[:, :, 0] = img_y
-    img_ycbcr[:, :, 1] = img_cb
-    img_ycbcr[:, :, 2] = img_cr
+    img_ycbcr = np.matmul(image_stack,ycbcr_from_rgb.T.copy())
+
+    img_ycbcr[..., 0] = img_ycbcr[..., 0]+ 16/255
+    img_ycbcr[..., 1] = img_ycbcr[..., 1]+ 128 / 255
+    img_ycbcr[..., 2] = img_ycbcr[..., 2]+ 128 / 255
+
 
     return img_ycbcr
 

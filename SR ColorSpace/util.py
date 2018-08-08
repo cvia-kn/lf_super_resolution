@@ -42,6 +42,6 @@ def parse_options():
     else:
         options.data_folders = [os.path.abspath("%s") % d for d in options.data_folders]
         for f in options.data_folders:
-            print (f)
+            print f
 
     return options.data_folders

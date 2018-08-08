@@ -33,10 +33,11 @@ class create_cnn:
 
     # both stacks have 9 views, patch size 16x16 + 16 overlap on all sides,
     # for a total of 48x48.
-    if config.config['rgb']:
-      self.C = 3
-    else:
-      self.C = 1
+    # if config.config['rgb']:
+    #   self.C = 3
+    # else:
+    #   self.C = 1
+    self.C = 3
 
     self.D = config.D
     self.H = config.H
@@ -51,16 +52,16 @@ class create_cnn:
     with tf.device( '/device:GPU:%i' % ( self.config.layers['preferred_gpu'] ) ):
       with tf.variable_scope( 'input' ):
 
-        self.stack_v = tf.placeholder(tf.float64, shape=[None, self.D, self.H, self.W, self.C] )
-        self.stack_h = tf.placeholder(tf.float64, shape=[None, self.D, self.H, self.W, self.C] )
-        self.cv = tf.placeholder(tf.float64, shape=[None, self.H_HR, self.W_HR, self.C] )
+        self.stack_v = tf.placeholder(tf.float32, shape=[None, self.D, self.H, self.W, self.C] )
+        self.stack_h = tf.placeholder(tf.float32, shape=[None, self.D, self.H, self.W, self.C] )
+        # self.cv = tf.placeholder(tf.float32, shape=[None, self.H_HR, self.W_HR, self.C] )
 
         self.stack_shape = self.stack_v.shape.as_list()
         self.stack_shape[ 0 ] = -1
 
         self.phase = tf.placeholder(tf.bool, name='phase')
-        self.keep_prob = tf.placeholder(tf.float64)
-        self.noise_sigma = tf.placeholder(tf.float64)
+        self.keep_prob = tf.placeholder(tf.float32)
+        self.noise_sigma = tf.placeholder(tf.float32)
 
     # FEATURE LAYERS
     self.batch_size = tf.shape(self.stack_v)[0]
@@ -273,7 +274,7 @@ class create_cnn:
       decoder['upconv_reduce'] = decoder['upconv'][:, loss_min_coord_2D:loss_max_coord_2D,
                                  loss_min_coord_2D:loss_max_coord_2D, :]
 
-      decoder['input'] = tf.placeholder(tf.float64, [None, self.H_HR, self.W_HR, decoder['channels']])
+      decoder['input'] = tf.placeholder(tf.float32, [None, self.H_HR, self.W_HR, decoder['channels']])
       decoder['input_reduce'] = decoder['input'][:, loss_min_coord_2D:loss_max_coord_2D_1,
                                 loss_min_coord_2D:loss_max_coord_2D_1, :]
 
@@ -375,7 +376,6 @@ class create_cnn:
       # tf.summary.image(id + '_res', tf.image.yuv_to_rgb(self.decoders_2D[id]['SR']),max_outputs=3)
 
    # self.merged = tf.summary.merge_all()
-
 
   # initialize new variables
   def initialize_uninitialized( self, sess ):
