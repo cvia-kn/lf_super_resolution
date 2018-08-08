@@ -41,10 +41,9 @@ def evaluator_thread(cnn_file, hp, inputs, outputs):
 
             # FOR SPECIFIC DECODER PATH (todo: make less of a hack)
             decoder_path = batch['decoder_path']
-            if decoder_path == 'cv':
-                decoder = cnn.decoders_2D[decoder_path]
-                (sv, loss) = sess.run([decoder['SR'], decoder['loss']],
-                                      feed_dict=net_in)
+            decoder = cnn.decoders_2D[decoder_path]
+            (sv, loss) = sess.run([decoder['SR'], decoder['loss']],
+                                  feed_dict=net_in)
 
             out['cv'] = sv
             outputs.put((out, batch))
