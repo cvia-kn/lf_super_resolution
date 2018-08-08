@@ -1,5 +1,0 @@
-import matplotlib.pyplot as plt
-from skimage.color import yuv2rgb
-a = batch['stacks_v'][12][8,:,:,:]
-plt.imshow(yuv2rgb(a))
-plt.show()
