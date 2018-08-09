@@ -3,7 +3,6 @@ from queue import Queue
 import time
 import numpy as np
 import h5py
-import math
 # plotting
 import matplotlib.pyplot as plt
 from skimage import measure
@@ -15,14 +14,13 @@ import _thread
 
 # light field GPU tools
 import lf_tools
-import tensorflow as tf2
 # evaluator thread
 from encode_decode_lightfield_v9_interp import encode_decode_lightfield
 from encode_decode_lightfield_v9_interp import scale_back
 from thread_evaluate_v9 import evaluator_thread
 
 # configuration
-import config_autoencoder_v9_final as hp
+import config_autoencoder_YUV as hp
 
 
 # Model path setup
@@ -37,7 +35,8 @@ outputs = Queue( 15*15 )
 
 data_folders = (
 
-( "super_resolution", "benchmark", "not seen", "lf_test_benchmark_antinous" ),
+# ( "super_resolution", "benchmark", "not seen", "lf_test_benchmark_antinous" ),
+( "super_resolution", "benchmark", "not seen", "lf_test_benchmark_pillows" ),
 )
 
 
@@ -69,7 +68,7 @@ for lf_name in data_folders:
     decoder_path = color_space
 
     result_cv = encode_decode_lightfield(data, LF_LR, LF_HR,
-                                        inputs, outputs,
+                                        inputs, outputs, color_space,
                                         decoder_path=decoder_path,
                                         )
     cv_out = result_cv[0]
@@ -83,20 +82,24 @@ for lf_name in data_folders:
         cv_out = YCbCr2rgb(cv_out)
         cv_out = cv_out.astype(np.float32)
     elif color_space == 'LAB':
-        cv_out = lab2rgb(cv_out)
+        cv_out = lab2rgb(cv_out.astype(np.float64))
         cv_out = cv_out.astype(np.float32)
 
 
     PSNR_out = measure.compare_psnr(cv_gt, cv_out, data_range=1, dynamic_range=None)
     SSIM_out = measure.compare_ssim(cv_gt, cv_out, data_range=1, multichannel=True)
 
-    plt.subplot(1, 2, 1)
+    plt.subplot(2, 2, 1)
     plt.title("PSNR= %.2f \nSSIM= %.2f" % (PSNR_out, SSIM_out))
     plt.xlabel("cv_interp")
     plt.imshow(np.clip(cv_out, 0, 1))
-    plt.subplot(1, 2, 2)
+    plt.subplot(2, 2, 2)
     plt.imshow(np.clip(cv_gt, 0, 1))
     plt.xlabel("Ground Truth")
+    plt.subplot(2, 2, 3)
+    plt.imshow(np.clip(cv_LR, 0, 1))
+    plt.xlabel("LowRes image")
+
     plt.show()
 
 inputs.put( () )

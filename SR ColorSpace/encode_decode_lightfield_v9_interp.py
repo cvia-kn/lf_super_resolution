@@ -16,12 +16,15 @@ from timeit import default_timer as timer
 
 # light field GPU tools
 import lf_tools
-import libs.tf_tools as tft
+
+from skimage.color import rgb2lab
+from libs.convert_colorspace import rgb2YCbCr, rgb2YUV
+
 
 # data config
 import config_data_format as cdf
 import interpolate_mask as im
-import config_autoencoder_v9_final as hp
+import config_autoencoder_YUV as hp
 
 def add_result_to_cv( data, result, cv_interp, cv_raw, mask_sum, bs_x, bs_y, bxx, dc ):
 
@@ -56,7 +59,7 @@ def add_result_to_cv( data, result, cv_interp, cv_raw, mask_sum, bs_x, bs_y, bxx
     mask_sum[py-p:py+q , px-p:px+q] = mask_sum[py-p:py+q , px-p:px+q] + mask
 
 
-def encode_decode_lightfield(data, LF_LR, LF_HR, inputs, outputs, decoder_path='cv'):
+def encode_decode_lightfield(data, LF_LR, LF_HR, inputs, outputs, ColorSpace, decoder_path='cv'):
   # light field size
   H = LF_LR.shape[2]
   W = LF_LR.shape[3]
@@ -102,6 +105,19 @@ def encode_decode_lightfield(data, LF_LR, LF_HR, inputs, outputs, decoder_path='
       stacks_v[px, :, :, :, :] = patch['stack_v']
       stacks_h[px, :, :, :, :] = patch['stack_h']
       cv_in[px, :, :, :] = patch['cv']
+      if ColorSpace == 'YUV':
+        stacks_v[px, :, :, :, :] = rgb2YUV(stacks_v[px, :, :, :, :])
+        stacks_h[px, :, :, :, :] = rgb2YUV(stacks_h[px, :, :, :, :])
+        cv_in[px, :, :, :] = rgb2YUV(cv_in[px, :, :, :])
+      elif ColorSpace == 'YCBCR':
+        stacks_v[px, :, :, :, :] = rgb2YCbCr(stacks_v[px, :, :, :, :])
+        stacks_h[px, :, :, :, :] = rgb2YCbCr(stacks_h[px, :, :, :, :])
+        cv_in[px, :, :, :] = rgb2YCbCr(cv_in[px, :, :, :])
+      elif ColorSpace == 'LAB':
+        stacks_v[px, :, :, :, :] = rgb2lab(stacks_v[px, :, :, :, :])
+        stacks_h[px, :, :, :, :] = rgb2lab(stacks_h[px, :, :, :, :])
+        cv_in[px, :, :, :] = rgb2lab(cv_in[px, :, :, :])
+
 
     # push complete batch to encoder/decoder pipeline
     batch = dict()
