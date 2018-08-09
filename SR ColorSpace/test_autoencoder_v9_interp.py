@@ -20,7 +20,7 @@ from encode_decode_lightfield_v9_interp import scale_back
 from thread_evaluate_v9 import evaluator_thread
 
 # configuration
-import config_autoencoder_YUV as hp
+import config_autoencoder as hp
 
 
 # Model path setup
@@ -37,6 +37,7 @@ data_folders = (
 
 # ( "super_resolution", "benchmark", "not seen", "lf_test_benchmark_antinous" ),
 ( "super_resolution", "benchmark", "not seen", "lf_test_benchmark_pillows" ),
+# ( "super_resolution", "benchmark", "not seen", "lf_test_benchmark_herbs" ),
 )
 
 
@@ -89,14 +90,14 @@ for lf_name in data_folders:
     PSNR_out = measure.compare_psnr(cv_gt, cv_out, data_range=1, dynamic_range=None)
     SSIM_out = measure.compare_ssim(cv_gt, cv_out, data_range=1, multichannel=True)
 
-    plt.subplot(2, 2, 1)
+    plt.subplot(1, 3, 1)
     plt.title("PSNR= %.2f \nSSIM= %.2f" % (PSNR_out, SSIM_out))
     plt.xlabel("cv_interp")
     plt.imshow(np.clip(cv_out, 0, 1))
-    plt.subplot(2, 2, 2)
+    plt.subplot(1, 3, 2)
     plt.imshow(np.clip(cv_gt, 0, 1))
     plt.xlabel("Ground Truth")
-    plt.subplot(2, 2, 3)
+    plt.subplot(1, 3, 3)
     plt.imshow(np.clip(cv_LR, 0, 1))
     plt.xlabel("LowRes image")
 

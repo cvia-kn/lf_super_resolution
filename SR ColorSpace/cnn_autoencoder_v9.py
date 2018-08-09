@@ -10,6 +10,7 @@ import tensorflow as tf
 import numpy as np
 import math
 import libs.layers as layers
+from tensorflow.image import yuv_to_rgb
 
 loss_min_coord_3D = 0
 loss_max_coord_3D = 48
@@ -305,7 +306,8 @@ class create_cnn:
                                                        out_channels=out_channels,
                                                        no_relu=no_relu).out
 
-      no_relu = True
+      if self.config.config['ColorSpace'] == 'YUV' or self.config.config['ColorSpace'] == 'LAB':
+        no_relu = True
       decoder['SR'] = layers.layer_pure_conv2D("upscale_final",
                                                layout_final,
                                                decoder['upconv'],
@@ -364,18 +366,28 @@ class create_cnn:
               print( '  creating L2-loss for decoder pipeline ' + id )
               self.decoders_2D[id]['loss'] = tf.losses.mean_squared_error( self.decoders_2D[id]['input_reduce'],
                                                                            self.decoders_2D[id]['SR'] )
-              # tf.summary.scalar('loss' + id, self.decoders_2D[id]['loss'])
+              tf.summary.scalar('loss' + id, self.decoders_2D[id]['loss'])
 
-      # tf.summary.image(id + '_input_hres', tf.image.hsv_to_rgb(self.decoders_2D[id]['input_reduce']),
-      #                   max_outputs=3)
-      # tf.summary.image(id + '_input_stacks', tf.image.hsv_to_rgb(self.stack_v[:,4,:,:,:]), max_outputs=3)
-      # tf.summary.image(id + '_res', tf.image.hsv_to_rgb(self.decoders_2D[id]['SR']),
-      #                   max_outputs=3)
-      # tf.summary.image(id + '_input_hres',tf.image.yuv_to_rgb(self.decoders_2D[id]['input_reduce']),max_outputs=3)
-      # tf.summary.image(id + '_input_stacks', tf.image.yuv_to_rgb(self.stack_v[:, 4, :, :, :]), max_outputs=3)
-      # tf.summary.image(id + '_res', tf.image.yuv_to_rgb(self.decoders_2D[id]['SR']),max_outputs=3)
+      if self.config.config['ColorSpace']=='YUV':
+          tf.summary.image(id + '_input_hres', yuv_to_rgb(self.decoders_2D[id]['input_reduce']),max_outputs=3)
+          tf.summary.image(id + '_input_stacks', yuv_to_rgb(self.stack_v[:, 4, :, :, :]), max_outputs=3)
+          tf.summary.image(id + '_res', yuv_to_rgb(self.decoders_2D[id]['SR']),max_outputs=3)
+      elif self.config.config['ColorSpace'] == 'YCBCR':
+          tf.summary.image(id + '_input_hres', tf.expand_dims(self.decoders_2D[id]['input_reduce'][:,:,:,0],-1), max_outputs=3)
+          tf.summary.image(id + '_input_stacks', tf.expand_dims(self.stack_v[:, 4, :, :, 0],-1), max_outputs=3)
+          tf.summary.image(id + '_res', tf.expand_dims(self.decoders_2D[id]['SR'][:,:,:,0],-1), max_outputs=3)
+      elif self.config.config['ColorSpace'] == 'LAB':
+          tf.summary.image(id + '_input_hres', tf.expand_dims(self.decoders_2D[id]['input_reduce'][:, :, :, 0], -1), max_outputs=3)
+          tf.summary.image(id + '_input_stacks', tf.expand_dims(self.stack_v[:, 4, :, :, 0], -1), max_outputs=3)
+          tf.summary.image(id + '_res', tf.expand_dims(self.decoders_2D[id]['SR'][:, :, :, 0], -1), max_outputs=3)
+      elif self.config.config['ColorSpace'] == 'RGB':
+          tf.summary.image(id + '_input_hres', self.decoders_2D[id]['input_reduce'], max_outputs=3)
+          tf.summary.image(id + '_input_stacks', self.stack_v[:, 4, :, :, :], max_outputs=3)
+          tf.summary.image(id + '_res', self.decoders_2D[id]['SR'], max_outputs=3)
 
-   # self.merged = tf.summary.merge_all()
+
+
+   self.merged = tf.summary.merge_all()
 
   # initialize new variables
   def initialize_uninitialized( self, sess ):

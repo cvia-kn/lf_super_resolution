@@ -141,10 +141,7 @@ class dataset:
           batch = lf_tools.convert2YCBCR(batch, stream, batch_index)
         elif ColorSpace == 'LAB':
           batch = lf_tools.convert2LAB(batch, stream, batch_index)
-      # if 'diffuse_v' in self.streams:
-      #   batch = lf_tools.augment_data_intrinsic(batch, batch_index)
-      # else:
-      #   batch = lf_tools.augment_data_HSV(batch, batch_index)
+
       n = n+1
 
 

@@ -41,7 +41,7 @@ def trainer_thread( model_path, hp, inputs ):
   else:
     print( '  ... not found.' )
 
-  # writerTensorboard = tf.summary.FileWriter('/data/tf_logs/visual_' + hp.network_model, sess.graph)
+  writerTensorboard = tf.summary.FileWriter('/data/tf_logs/visual_' + hp.network_model, sess.graph)
   # writerTensorboard = tf.summary.FileWriter('./visual_' + hp.network_model, sess.graph)
   # new saver object with complete network
   saver = tf.train.Saver()
@@ -90,8 +90,8 @@ def trainer_thread( model_path, hp, inputs ):
           writer = csv.writer(f)
           writer.writerow(fields)
 
-        # summary = sess.run(cnn.merged, feed_dict=net_in)
-        # writerTensorboard.add_summary(summary, niter)
+        summary = sess.run(cnn.merged, feed_dict=net_in)
+        writerTensorboard.add_summary(summary, niter)
         print( '' )
         #code.interact( local=locals() )
 

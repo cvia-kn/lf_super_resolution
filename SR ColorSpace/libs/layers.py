@@ -109,6 +109,7 @@ class layer_pure_conv2D:
             self.conv = tf.nn.conv2d(self.bn, self.encoder_W, strides=self.stride, padding='SAME')
             if no_relu:
                 self.features = self.conv + self.encoder_b
+                print('meow')
             else:
                 self.features = tf.nn.relu(self.conv + self.encoder_b)
 
@@ -250,10 +251,11 @@ class layer_upconv2d_v2:
             self.output_shape[3] = self.C_out
             self.W = variables.decoder_W
             self.b = variables.decoder_b
-            self.embedding= variables.decoder_embedding
 
 
             self.resample = variables.resample
+            if self.resample:
+                self.embedding = variables.decoder_embedding
 
             if out_channels != -1:
                 # output channel override

@@ -12,10 +12,10 @@ import time
 import autoencoder_data_streams as data
 
 # global configuration
-import config_autoencoder_v9_final as hp
+import config_autoencoder as hp
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = hp.config['VisibleGPU']
 
 # import data
 feeds = []

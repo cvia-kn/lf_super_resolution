@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import interpolate
-import config_autoencoder_v9_final as hp
+import config_autoencoder as hp
 
 def get_mask(H,W,m):
     arr = np.zeros((H,W), dtype = np.float32) + hp.eval_res['min_mask']

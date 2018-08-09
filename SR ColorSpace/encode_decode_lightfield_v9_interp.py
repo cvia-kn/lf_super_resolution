@@ -24,7 +24,7 @@ from libs.convert_colorspace import rgb2YCbCr, rgb2YUV
 # data config
 import config_data_format as cdf
 import interpolate_mask as im
-import config_autoencoder_YUV as hp
+import config_autoencoder as hp
 
 def add_result_to_cv( data, result, cv_interp, cv_raw, mask_sum, bs_x, bs_y, bxx, dc ):
 
