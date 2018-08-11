@@ -1,8 +1,0 @@
-import matplotlib.pyplot as plt
-from skimage.color import yuv2rgb, lab2rgb
-from libs.convert_colorspace import YCbCr2rgb
-a = batch['stacks_v'][12][4,:,:,:]
-plt.imshow(yuv2rgb(a))
-#plt.imshow(YCbCr2rgb(a))
-#plt.imshow(lab2rgb(a))
-plt.show()
